@@ -7,6 +7,10 @@ def liste_depenses(request):
     depenses = Depense.objects.filter(description__icontains=query) if query else Depense.objects.all()
     return render(request, 'depenses/liste.html', {'depenses': depenses, 'query': query})
 
+def detail_depense(request, pk):
+    depense = get_object_or_404(Depense, pk=pk)
+    return render(request, 'depenses/detail.html', {'depense': depense})
+
 def ajouter_depense(request):
     form = DepenseForm()
     if request.method == 'POST':

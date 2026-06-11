@@ -7,6 +7,10 @@ def liste_clients(request):
     clients = Client.objects.filter(nom__icontains=query) if query else Client.objects.all()
     return render(request, 'tiers/clients.html', {'clients': clients, 'query': query})
 
+def detail_client(request, pk):
+    client = get_object_or_404(Client, pk=pk)
+    return render(request, 'tiers/detail_client.html', {'client': client})
+
 def ajouter_client(request):
     form = ClientForm()
     if request.method == 'POST':
@@ -37,6 +41,10 @@ def liste_fournisseurs(request):
     query = request.GET.get('q', '')
     fournisseurs = Fournisseur.objects.filter(nom__icontains=query) if query else Fournisseur.objects.all()
     return render(request, 'tiers/fournisseurs.html', {'fournisseurs': fournisseurs, 'query': query})
+
+def detail_fournisseur(request, pk):
+    fournisseur = get_object_or_404(Fournisseur, pk=pk)
+    return render(request, 'tiers/detail_fournisseur.html', {'fournisseur': fournisseur})
 
 def ajouter_fournisseur(request):
     form = FournisseurForm()

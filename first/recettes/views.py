@@ -7,6 +7,10 @@ def liste_recettes(request):
     recettes = Recette.objects.filter(description__icontains=query) if query else Recette.objects.all()
     return render(request, 'recettes/liste.html', {'recettes': recettes, 'query': query})
 
+def detail_recette(request, pk):
+    recette = get_object_or_404(Recette, pk=pk)
+    return render(request, 'recettes/detail.html', {'recette': recette})
+
 def ajouter_recette(request):
     form = RecetteForm()
     if request.method == 'POST':
