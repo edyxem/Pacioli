@@ -70,9 +70,17 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
-STATIC_URL = 'static/'
-STATICFILES_DIRS = [BASE_DIR / 'static']
+# Static files (CSS, JavaScript, Images)
+# https://docs.djangoproject.com/en/6.0/howto/static-files/
 
+STATIC_URL = 'static/'
+
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+
+# Autorisation pour l'user jsp trop c'est quoi
+
+AUTH_USER_MODEL = 'users.Utilisateur'
 # Redirection
 
 LOGIN_URL = '/users/login/'
