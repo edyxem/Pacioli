@@ -1,0 +1,227 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block page_title %} — Tiers{% endblock %}
+
+{# Active dock: clients ou fournisseurs selon l'action #}
+{% block dock_clients %}{% if action == 'liste_clients' or action == 'form_client' or action == 'detail_client' %}active{% endif %}{% endblock %}
+{% block dock_fournisseurs %}{% if action == 'liste_fournisseurs' or action == 'form_fournisseur' or action == 'detail_fournisseur' %}active{% endif %}{% endblock %}
+
+{% block header_title %}
+  {% if action == 'liste_clients' %}Clients
+  {% elif action == 'liste_fournisseurs' %}Fournisseurs
+  {% elif action == 'form_client' or action == 'form_fournisseur' %}{{ titre }}
+  {% elif action == 'detail_client' %}Détail client
+  {% elif action == 'detail_fournisseur' %}Détail fournisseur
+  {% elif action == 'supprimer' %}Confirmer suppression
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+
+  {% if action == 'liste_clients' %}
+  <div class="card" style="margin-bottom:24px">
+    <div class="annuaire">
+      <div class="titlebox">
+        <small>ANNUAIRE</small>
+        <h2>{{ clients|length }} client{% if clients|length > 1 %}s{% endif %}</h2>
+      </div>
+      <form method="GET">
+        <div class="search">
+          🔍 <input name="q" placeholder="Rechercher un client..." value="{{ query }}"/>
+        </div>
+      </form>
+      <a href="{% url 'ajouter_client' %}">
+        <button class="add-btn">+ Nouveau client</button>
+      </a>
+      <a href="{% url 'liste_fournisseurs' %}" style="margin-left:auto">
+        <button class="add-btn" style="background:#f0f0f0;color:var(--ink)">Voir fournisseurs</button>
+      </a>
+    </div>
+  </div>
+
+  <div class="clients-grid">
+    {% for client in clients %}
+    <div class="client">
+      <div class="av">{{ client.nom|slice:":2"|upper }}</div>
+      <h3>{{ client.nom }}</h3>
+      <span class="chip">CLIENT</span>
+      <div class="lines">
+        <span>📞 {{ client.telephone|default:"—" }}</span>
+        <span>📍 {{ client.adresse|default:"—" }}</span>
+      </div>
+      <div class="total">
+        <span>
+          <a href="{% url 'detail_client' client.pk %}">Détail</a> ·
+          <a href="{% url 'modifier_client' client.pk %}">Modifier</a> ·
+          <a href="{% url 'supprimer_client' client.pk %}" style="color:var(--bad)">Supprimer</a>
+        </span>
+      </div>
+    </div>
+    {% empty %}
+    <div style="grid-column:1/-1;text-align:center;padding:60px 0;color:var(--muted)">
+      Aucun client trouvé.
+    </div>
+    {% endfor %}
+  </div>
+
+  {% elif action == 'liste_fournisseurs' %}
+  <div class="card" style="margin-bottom:24px">
+    <div class="annuaire">
+      <div class="titlebox">
+        <small>ANNUAIRE</small>
+        <h2>{{ fournisseurs|length }} fournisseur{% if fournisseurs|length > 1 %}s{% endif %}</h2>
+      </div>
+      <form method="GET">
+        <div class="search">
+          🔍 <input name="q" placeholder="Rechercher un fournisseur..." value="{{ query }}"/>
+        </div>
+      </form>
+      <a href="{% url 'ajouter_fournisseur' %}">
+        <button class="add-btn">+ Nouveau fournisseur</button>
+      </a>
+      <a href="{% url 'liste_clients' %}" style="margin-left:auto">
+        <button class="add-btn" style="background:#f0f0f0;color:var(--ink)">Voir clients</button>
+      </a>
+    </div>
+  </div>
+
+  <div class="clients-grid">
+    {% for fournisseur in fournisseurs %}
+    <div class="client">
+      <div class="av" style="background:#333">{{ fournisseur.nom|slice:":2"|upper }}</div>
+      <h3>{{ fournisseur.nom }}</h3>
+      <span class="chip">FOURNISSEUR</span>
+      <div class="lines">
+        <span>📞 {{ fournisseur.telephone|default:"—" }}</span>
+        <span>📍 {{ fournisseur.adresse|default:"—" }}</span>
+      </div>
+      <div class="total">
+        <span>
+          <a href="{% url 'detail_fournisseur' fournisseur.pk %}">Détail</a> ·
+          <a href="{% url 'modifier_fournisseur' fournisseur.pk %}">Modifier</a> ·
+          <a href="{% url 'supprimer_fournisseur' fournisseur.pk %}" style="color:var(--bad)">Supprimer</a>
+        </span>
+      </div>
+    </div>
+    {% empty %}
+    <div style="grid-column:1/-1;text-align:center;padding:60px 0;color:var(--muted)">
+      Aucun fournisseur trouvé.
+    </div>
+    {% endfor %}
+  </div>
+
+  {% elif action == 'form_client' %}
+  <div class="form-card card">
+    <h2>{{ titre }}</h2>
+    <form method="POST">
+      {% csrf_token %}
+      <div class="form-group">
+        <label>Nom</label>
+        {{ form.nom }}
+        {% if form.nom.errors %}<ul class="errorlist">{% for e in form.nom.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Téléphone</label>
+          {{ form.telephone }}
+        </div>
+        <div class="form-group">
+          <label>Adresse</label>
+          {{ form.adresse }}
+        </div>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn-submit">Enregistrer</button>
+        <a href="{% url 'liste_clients' %}" class="btn-cancel">Annuler</a>
+      </div>
+    </form>
+  </div>
+
+  {% elif action == 'form_fournisseur' %}
+  <div class="form-card card">
+    <h2>{{ titre }}</h2>
+    <form method="POST">
+      {% csrf_token %}
+      <div class="form-group">
+        <label>Nom</label>
+        {{ form.nom }}
+        {% if form.nom.errors %}<ul class="errorlist">{% for e in form.nom.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Téléphone</label>
+          {{ form.telephone }}
+        </div>
+        <div class="form-group">
+          <label>Adresse</label>
+          {{ form.adresse }}
+        </div>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn-submit">Enregistrer</button>
+        <a href="{% url 'liste_fournisseurs' %}" class="btn-cancel">Annuler</a>
+      </div>
+    </form>
+  </div>
+
+  {% elif action == 'detail_client' %}
+  <div class="form-card card">
+    <div style="display:flex;align-items:center;gap:16px;margin-bottom:24px">
+      <div class="av" style="width:56px;height:56px;border-radius:14px;font-size:16px">{{ client.nom|slice:":2"|upper }}</div>
+      <div>
+        <h2 style="margin:0">{{ client.nom }}</h2>
+        <span class="chip" style="margin-top:6px;display:inline-block">CLIENT</span>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Téléphone</label>
+      <p>{{ client.telephone|default:"—" }}</p>
+    </div>
+    <div class="form-group">
+      <label>Adresse</label>
+      <p>{{ client.adresse|default:"—" }}</p>
+    </div>
+    <div class="form-actions">
+      <a href="{% url 'modifier_client' client.pk %}" class="btn-submit">Modifier</a>
+      <a href="{% url 'liste_clients' %}" class="btn-cancel">Retour</a>
+    </div>
+  </div>
+
+  {% elif action == 'detail_fournisseur' %}
+  <div class="form-card card">
+    <div style="display:flex;align-items:center;gap:16px;margin-bottom:24px">
+      <div class="av" style="width:56px;height:56px;border-radius:14px;font-size:16px;background:#333">{{ fournisseur.nom|slice:":2"|upper }}</div>
+      <div>
+        <h2 style="margin:0">{{ fournisseur.nom }}</h2>
+        <span class="chip" style="margin-top:6px;display:inline-block">FOURNISSEUR</span>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Téléphone</label>
+      <p>{{ fournisseur.telephone|default:"—" }}</p>
+    </div>
+    <div class="form-group">
+      <label>Adresse</label>
+      <p>{{ fournisseur.adresse|default:"—" }}</p>
+    </div>
+    <div class="form-actions">
+      <a href="{% url 'modifier_fournisseur' fournisseur.pk %}" class="btn-submit">Modifier</a>
+      <a href="{% url 'liste_fournisseurs' %}" class="btn-cancel">Retour</a>
+    </div>
+  </div>
+
+  {% elif action == 'supprimer' %}
+  <div class="confirm-card">
+    <div class="icon">🗑️</div>
+    <h2>Confirmer la suppression ?</h2>
+    <p>« {{ objet.nom }} »<br>Cette action est irréversible.</p>
+    <form method="POST">
+      {% csrf_token %}
+      <button type="submit" class="btn-danger">Oui, supprimer</button>
+      <a href="{% url retour %}" class="btn-cancel" style="margin-left:12px">Annuler</a>
+    </form>
+  </div>
+  {% endif %}
+
+{% endblock %}

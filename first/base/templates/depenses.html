@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block page_title %}— Dépenses{% endblock %}
+{% block header_title %}Dépenses{% endblock %}
+{% block dock_depenses %}active{% endblock %}
+
+{% block content %}
+
+{% if action == 'liste' %}
+<div class="grid-recettes">
+  <div>
+    <div class="rev-card">
+      <div class="row1"><div class="arrow">↘</div> Total dépenses</div>
+      <div class="big">− {{ total_depenses|floatformat:0 }} XOF</div>
+    </div>
+    <button class="new-btn" onclick="window.location='{% url 'ajouter_depense' %}'">
+      + Nouvelle dépense
+    </button>
+  </div>
+
+  <div class="card list">
+    <div class="head">
+      <h2>Toutes les dépenses</h2>
+      <form method="GET" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <div class="search" style="min-width:unset">
+          🔍 <input name="q" placeholder="Rechercher..." value="{{ query }}"/>
+        </div>
+        <select name="categorie" onchange="this.form.submit()" style="border:1.5px solid var(--line);border-radius:14px;padding:10px 14px;font-family:inherit;font-size:14px;outline:none;background:#f8f8f8;color:var(--ink)">
+          <option value="">Toutes catégories</option>
+          {% for cat in categories %}
+          <option value="{{ cat.pk }}" {% if categorie_active == cat.pk|stringformat:"s" %}selected{% endif %}>{{ cat.nom }}</option>
+          {% endfor %}
+        </select>
+      </form>
+    </div>
+
+    {% for depense in depenses %}
+    <div class="rev-row dep-row">
+      <div class="ic">↘</div>
+      <div>
+        <b>{{ depense.description }}</b>
+        <small>
+          {{ depense.date }}{% if depense.fournisseur %} · {{ depense.fournisseur }}{% endif %}
+          {% if depense.categorie %}<span class="chip" style="margin-left:6px">{{ depense.categorie }}</span>{% endif %}
+        </small>
+      </div>
+      <div class="right">
+        <b>− {{ depense.montant|floatformat:0 }} XOF</b>
+        <small>
+          <a href="{% url 'detail_depense' depense.pk %}">Détail</a> ·
+          <a href="{% url 'modifier_depense' depense.pk %}">Modifier</a> ·
+          <a href="{% url 'supprimer_depense' depense.pk %}" style="color:var(--bad)">Supprimer</a>
+        </small>
+      </div>
+    </div>
+    {% empty %}
+    <p style="color:var(--muted);text-align:center;padding:30px 0">Aucune dépense trouvée.</p>
+    {% endfor %}
+  </div>
+</div>
+
+{% elif action == 'detail' %}
+<div class="form-card">
+  <h2>{{ depense.description }}</h2>
+  <div class="form-group">
+    <label>Date</label>
+    <p>{{ depense.date }}</p>
+  </div>
+  <div class="form-group">
+    <label>Montant</label>
+    <p style="font-size:24px;font-weight:800;color:var(--bad)">− {{ depense.montant|floatformat:0 }} XOF</p>
+  </div>
+  <div class="form-group">
+    <label>Fournisseur</label>
+    <p>{% if depense.fournisseur %}{{ depense.fournisseur }}{% else %}—{% endif %}</p>
+  </div>
+  <div class="form-group">
+    <label>Catégorie</label>
+    <p>{% if depense.categorie %}{{ depense.categorie }}{% else %}—{% endif %}</p>
+  </div>
+  <div class="form-actions">
+    <a href="{% url 'modifier_depense' depense.pk %}" class="btn-submit">Modifier</a>
+    <a href="{% url 'liste_depenses' %}" class="btn-cancel">Retour</a>
+  </div>
+</div>
+
+{% elif action == 'form' %}
+<div class="form-card">
+  <h2>{{ titre }}</h2>
+  <form method="POST">
+    {% csrf_token %}
+    <div class="form-group">
+      <label>Date</label>
+      {{ form.date }}
+      {% if form.date.errors %}<ul class="errorlist">{% for e in form.date.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </div>
+    <div class="form-group">
+      <label>Description</label>
+      {{ form.description }}
+      {% if form.description.errors %}<ul class="errorlist">{% for e in form.description.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Montant (XOF)</label>
+        {{ form.montant }}
+        {% if form.montant.errors %}<ul class="errorlist">{% for e in form.montant.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+      <div class="form-group">
+        <label>Catégorie</label>
+        {{ form.categorie }}
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Fournisseur</label>
+      {{ form.fournisseur }}
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn-submit">Enregistrer</button>
+      <a href="{% url 'liste_depenses' %}" class="btn-cancel">Annuler</a>
+    </div>
+  </form>
+</div>
+
+{% elif action == 'supprimer' %}
+<div class="confirm-card">
+  <div class="icon">🗑️</div>
+  <h2>Supprimer cette dépense ?</h2>
+  <p>« {{ objet.description }} » — {{ objet.montant|floatformat:0 }} XOF<br>Cette action est irréversible.</p>
+  <form method="POST">
+    {% csrf_token %}
+    <button type="submit" class="btn-danger">Oui, supprimer</button>
+    <a href="{% url 'liste_depenses' %}" class="btn-cancel" style="margin-left:12px">Annuler</a>
+  </form>
+</div>
+
+{% endif %}
+{% endblock %}

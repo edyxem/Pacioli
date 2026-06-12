@@ -1,10 +1,20 @@
 from django import forms
-from .models import Recette
+from .models import Recette, CategorieRecette
+
+
+class CategorieRecetteForm(forms.ModelForm):
+    class Meta:
+        model = CategorieRecette
+        fields = ['nom']
+        widgets = {
+            'nom': forms.TextInput(attrs={'placeholder': 'Ex: Ventes, Prestations...'}),
+        }
+
 
 class RecetteForm(forms.ModelForm):
     class Meta:
         model = Recette
-        fields = ['date', 'montant', 'description', 'client']
+        fields = ['date', 'montant', 'description', 'categorie', 'client']
         widgets = {
             'date': forms.DateInput(attrs={'type': 'date'}),
             'montant': forms.NumberInput(attrs={'placeholder': 'Montant en XOF'}),

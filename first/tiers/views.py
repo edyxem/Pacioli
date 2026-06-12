@@ -5,11 +5,18 @@ from .forms import ClientForm, FournisseurForm
 def liste_clients(request):
     query = request.GET.get('q', '')
     clients = Client.objects.filter(nom__icontains=query) if query else Client.objects.all()
-    return render(request, 'tiers/clients.html', {'clients': clients, 'query': query})
+    return render(request, 'tiers.html', {
+        'action': 'liste_clients',
+        'clients': clients,
+        'query': query,
+    })
 
 def detail_client(request, pk):
     client = get_object_or_404(Client, pk=pk)
-    return render(request, 'tiers/detail_client.html', {'client': client})
+    return render(request, 'tiers.html', {
+        'action': 'detail_client',
+        'client': client,
+    })
 
 def ajouter_client(request):
     form = ClientForm()
@@ -18,7 +25,11 @@ def ajouter_client(request):
         if form.is_valid():
             form.save()
             return redirect('liste_clients')
-    return render(request, 'tiers/form_client.html', {'form': form, 'titre': 'Ajouter un client'})
+    return render(request, 'tiers.html', {
+        'action': 'form_client',
+        'form': form,
+        'titre': 'Ajouter un client',
+    })
 
 def modifier_client(request, pk):
     client = get_object_or_404(Client, pk=pk)
@@ -28,23 +39,38 @@ def modifier_client(request, pk):
         if form.is_valid():
             form.save()
             return redirect('liste_clients')
-    return render(request, 'tiers/form_client.html', {'form': form, 'titre': 'Modifier un client'})
+    return render(request, 'tiers.html', {
+        'action': 'form_client',
+        'form': form,
+        'titre': 'Modifier un client',
+    })
 
 def supprimer_client(request, pk):
     client = get_object_or_404(Client, pk=pk)
     if request.method == 'POST':
         client.delete()
         return redirect('liste_clients')
-    return render(request, 'tiers/confirmer_suppression.html', {'objet': client})
+    return render(request, 'tiers.html', {
+        'action': 'supprimer',
+        'objet': client,
+        'retour': 'liste_clients',
+    })
 
 def liste_fournisseurs(request):
     query = request.GET.get('q', '')
     fournisseurs = Fournisseur.objects.filter(nom__icontains=query) if query else Fournisseur.objects.all()
-    return render(request, 'tiers/fournisseurs.html', {'fournisseurs': fournisseurs, 'query': query})
+    return render(request, 'tiers.html', {
+        'action': 'liste_fournisseurs',
+        'fournisseurs': fournisseurs,
+        'query': query,
+    })
 
 def detail_fournisseur(request, pk):
     fournisseur = get_object_or_404(Fournisseur, pk=pk)
-    return render(request, 'tiers/detail_fournisseur.html', {'fournisseur': fournisseur})
+    return render(request, 'tiers.html', {
+        'action': 'detail_fournisseur',
+        'fournisseur': fournisseur,
+    })
 
 def ajouter_fournisseur(request):
     form = FournisseurForm()
@@ -53,7 +79,11 @@ def ajouter_fournisseur(request):
         if form.is_valid():
             form.save()
             return redirect('liste_fournisseurs')
-    return render(request, 'tiers/form_fournisseur.html', {'form': form, 'titre': 'Ajouter un fournisseur'})
+    return render(request, 'tiers.html', {
+        'action': 'form_fournisseur',
+        'form': form,
+        'titre': 'Ajouter un fournisseur',
+    })
 
 def modifier_fournisseur(request, pk):
     fournisseur = get_object_or_404(Fournisseur, pk=pk)
@@ -63,11 +93,19 @@ def modifier_fournisseur(request, pk):
         if form.is_valid():
             form.save()
             return redirect('liste_fournisseurs')
-    return render(request, 'tiers/form_fournisseur.html', {'form': form, 'titre': 'Modifier un fournisseur'})
+    return render(request, 'tiers.html', {
+        'action': 'form_fournisseur',
+        'form': form,
+        'titre': 'Modifier un fournisseur',
+    })
 
 def supprimer_fournisseur(request, pk):
     fournisseur = get_object_or_404(Fournisseur, pk=pk)
     if request.method == 'POST':
         fournisseur.delete()
         return redirect('liste_fournisseurs')
-    return render(request, 'tiers/confirmer_suppression.html', {'objet': fournisseur})
+    return render(request, 'tiers.html', {
+        'action': 'supprimer',
+        'objet': fournisseur,
+        'retour': 'liste_fournisseurs',
+    })

@@ -1,0 +1,101 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pacioli — {% if action == 'login' %}Connexion{% else %}Inscription{% endif %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/pacioli.css' %}">
+</head>
+<body>
+<div class="auth-page">
+  <div class="auth-card">
+
+    <div class="logo" style="justify-content:center;margin-bottom:32px">
+      <div class="logo-slot">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+          <path d="M2 17l10 5 10-5"/>
+          <path d="M2 12l10 5 10-5"/>
+        </svg>
+      </div>
+      <div class="logo-text">Pacioli</div>
+    </div>
+
+    {% if messages %}
+    <ul class="messages">
+      {% for message in messages %}
+      <li class="{{ message.tags }}">{{ message }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+
+    {% if action == 'login' %}
+    <p class="sub" style="text-align:center;margin-bottom:28px">Connectez-vous à votre espace comptable</p>
+    <form method="POST" action="{% url 'login' %}">
+      {% csrf_token %}
+      <div class="form-group">
+        <label>Nom d'utilisateur</label>
+        {{ form.username }}
+        {% if form.username.errors %}<ul class="errorlist">{% for e in form.username.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+      <div class="form-group">
+        <label>Mot de passe</label>
+        {{ form.password }}
+        {% if form.password.errors %}<ul class="errorlist">{% for e in form.password.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn-submit" style="width:100%;justify-content:center">Se connecter</button>
+      </div>
+    </form>
+    <div class="auth-link">
+      Pas encore de compte ? <a href="{% url 'signup' %}">Créer un compte</a>
+    </div>
+
+    {% elif action == 'signup' %}
+    <p class="sub" style="text-align:center;margin-bottom:28px">Créer un nouveau compte</p>
+    <form method="POST" action="{% url 'signup' %}">
+      {% csrf_token %}
+      <div class="form-group">
+        <label>Nom d'utilisateur</label>
+        {{ form.username }}
+        {% if form.username.errors %}<ul class="errorlist">{% for e in form.username.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+      <div class="form-group">
+        <label>Adresse e-mail</label>
+        {{ form.email }}
+        {% if form.email.errors %}<ul class="errorlist">{% for e in form.email.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+      <div class="form-group">
+        <label>Rôle</label>
+        {{ form.role }}
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Mot de passe</label>
+          {{ form.password1 }}
+          {% if form.password1.errors %}<ul class="errorlist">{% for e in form.password1.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        </div>
+        <div class="form-group">
+          <label>Confirmer</label>
+          {{ form.password2 }}
+          {% if form.password2.errors %}<ul class="errorlist">{% for e in form.password2.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        </div>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn-submit" style="width:100%;justify-content:center">Créer le compte</button>
+      </div>
+    </form>
+    <div class="auth-link">
+      Déjà un compte ? <a href="{% url 'login' %}">Se connecter</a>
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+<script src="{% static 'js/pacioli.js' %}"></script>
+</body>
+</html>

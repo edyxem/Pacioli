@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block page_title %} — Tableau de bord{% endblock %}
+{% block header_title %}Tableau de bord{% endblock %}
+{% block dock_dashboard %}active{% endblock %}
+
+{% block content %}
+<div class="grid-tableau">
+  <div>
+    <div class="balance">
+      <div class="lbl">Solde Total</div>
+      <div class="amount">{{ solde|floatformat:0 }} XOF</div>
+      <button class="transfer-btn" onclick="window.location='{% url 'ajouter_recette' %}'">
+        Nouvelle opération <span class="plus">+</span>
+      </button>
+    </div>
+
+    <div class="pair">
+      <div class="mini recette" onclick="window.location='{% url 'liste_recettes' %}'">
+        <div class="circle">+</div>
+        <b>Recettes</b>
+        <small style="color:var(--muted);font-size:12px">{{ total_recettes|floatformat:0 }} XOF</small>
+      </div>
+      <div class="mini depense" onclick="window.location='{% url 'liste_depenses' %}'">
+        <div class="circle">−</div>
+        <b>Dépenses</b>
+        <small style="color:var(--muted);font-size:12px">{{ total_depenses|floatformat:0 }} XOF</small>
+      </div>
+    </div>
+
+    <div class="clients-strip" onclick="window.location='{% url 'liste_clients' %}'" style="cursor:pointer">
+      <div class="stack"><span></span><span></span><span></span></div>
+      <div>
+        <b>{{ nb_clients }} client(s)</b>
+        <small>{{ nb_fournisseurs }} fournisseur(s)</small>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card cashflow">
+      <div class="head">
+        <h2>Flux de trésorerie</h2>
+        <div class="toggle">
+          <a href="?chart=semaine">
+            <button class="{% if chart_mode == 'semaine' %}on{% endif %}">Semaine</button>
+          </a>
+          <a href="?chart=semaines">
+            <button class="{% if chart_mode == 'semaines' %}on{% endif %}">7 semaines</button>
+          </a>
+          <a href="?chart=mois">
+            <button class="{% if chart_mode == 'mois' %}on{% endif %}">6 mois</button>
+          </a>
+        </div>
+      </div>
+      <div class="chart">
+        {% for bar in chart_data %}
+        <div class="bar-wrap">
+          <div class="bar {% if forloop.last %}hl{% endif %}" style="height:{{ bar.hauteur }}%"
+               title="{{ bar.label }} — {{ bar.recettes|floatformat:0 }} XOF"></div>
+          <small>{{ bar.label }}</small>
+        </div>
+        {% endfor %}
+      </div>
+      {% if chart_mode == 'semaine' %}
+      <p style="font-size:12px;color:var(--muted);margin:12px 0 0;text-align:center">
+        Semaine du {{ chart_data.0.label }} au {{ chart_data.6.label }}
+      </p>
+      {% endif %}
+    </div>
+
+    <div class="card ops" style="margin-top:18px">
+      <div class="head">
+        <h2>Dernières opérations</h2>
+        <a href="{% url 'journal' %}">Voir tout</a>
+      </div>
+      {% for recette in recettes %}
+      <div class="op">
+        <div class="ico">↗</div>
+        <div>
+          <b>{{ recette.description }}</b>
+          <small>{{ recette.date }}{% if recette.client %} · {{ recette.client }}{% endif %}</small>
+        </div>
+        <div class="amt pos">+ {{ recette.montant|floatformat:0 }} XOF</div>
+      </div>
+      {% endfor %}
+      {% for depense in depenses %}
+      <div class="op">
+        <div class="ico">↘</div>
+        <div>
+          <b>{{ depense.description }}</b>
+          <small>{{ depense.date }}{% if depense.fournisseur %} · {{ depense.fournisseur }}{% endif %}</small>
+        </div>
+        <div class="amt neg">− {{ depense.montant|floatformat:0 }} XOF</div>
+      </div>
+      {% endfor %}
+      {% if not recettes and not depenses %}
+      <p style="color:var(--muted);text-align:center;padding:20px 0">Aucune opération pour l'instant.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

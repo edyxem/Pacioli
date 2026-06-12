@@ -1,15 +1,34 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import Depense
+from .models import Depense, CategorieDepense
 from .forms import DepenseForm
 
 def liste_depenses(request):
     query = request.GET.get('q', '')
-    depenses = Depense.objects.filter(description__icontains=query) if query else Depense.objects.all()
-    return render(request, 'depenses/liste.html', {'depenses': depenses, 'query': query})
+    categorie_id = request.GET.get('categorie', '')
+    depenses = Depense.objects.all()
+    if query:
+        depenses = depenses.filter(description__icontains=query)
+    if categorie_id:
+        depenses = depenses.filter(categorie_id=categorie_id)
+    total_depenses = sum(d.montant for d in depenses)
+    categories = CategorieDepense.objects.all()
+    return render(request, 'depenses.html', {
+        'action': 'liste',
+        'depenses': depenses,
+        'query': query,
+        'total_depenses': total_depenses,
+        'categories': categories,
+        'categorie_active': categorie_id,
+    })
+
 
 def detail_depense(request, pk):
     depense = get_object_or_404(Depense, pk=pk)
-    return render(request, 'depenses/detail.html', {'depense': depense})
+    return render(request, 'depenses.html', {
+        'action': 'detail',
+        'depense': depense,
+    })
+
 
 def ajouter_depense(request):
     form = DepenseForm()
@@ -18,7 +37,12 @@ def ajouter_depense(request):
         if form.is_valid():
             form.save()
             return redirect('liste_depenses')
-    return render(request, 'depenses/form.html', {'form': form, 'titre': 'Ajouter une dépense'})
+    return render(request, 'depenses.html', {
+        'action': 'form',
+        'form': form,
+        'titre': 'Ajouter une dépense',
+    })
+
 
 def modifier_depense(request, pk):
     depense = get_object_or_404(Depense, pk=pk)
@@ -28,11 +52,20 @@ def modifier_depense(request, pk):
         if form.is_valid():
             form.save()
             return redirect('liste_depenses')
-    return render(request, 'depenses/form.html', {'form': form, 'titre': 'Modifier une dépense'})
+    return render(request, 'depenses.html', {
+        'action': 'form',
+        'form': form,
+        'titre': 'Modifier une dépense',
+    })
+
 
 def supprimer_depense(request, pk):
     depense = get_object_or_404(Depense, pk=pk)
     if request.method == 'POST':
         depense.delete()
         return redirect('liste_depenses')
-    return render(request, 'depenses/confirmer_suppression.html', {'objet': depense})
+    return render(request, 'depenses.html', {
+        'action': 'supprimer',
+        'objet': depense,
+        'retour': 'liste_depenses',
+    })

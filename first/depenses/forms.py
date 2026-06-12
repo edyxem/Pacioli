@@ -1,10 +1,20 @@
 from django import forms
-from .models import Depense
+from .models import Depense, CategorieDepense
+
+
+class CategorieDepenseForm(forms.ModelForm):
+    class Meta:
+        model = CategorieDepense
+        fields = ['nom']
+        widgets = {
+            'nom': forms.TextInput(attrs={'placeholder': 'Ex: Loyer, Fournitures...'}),
+        }
+
 
 class DepenseForm(forms.ModelForm):
     class Meta:
         model = Depense
-        fields = ['date', 'montant', 'description', 'fournisseur']
+        fields = ['date', 'montant', 'description', 'categorie', 'fournisseur']
         widgets = {
             'date': forms.DateInput(attrs={'type': 'date'}),
             'montant': forms.NumberInput(attrs={'placeholder': 'Montant en XOF'}),

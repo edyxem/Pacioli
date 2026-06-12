@@ -1,0 +1,253 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block page_title %} — Rapports{% endblock %}
+
+{% block dock_journal %}{% if action == 'journal' %}active{% endif %}{% endblock %}
+{% block dock_bilan %}{% if action == 'bilan' or action == 'etat_recettes' or action == 'etat_depenses' or action == 'rapport_global' %}active{% endif %}{% endblock %}
+
+{% block header_title %}
+  {% if action == 'journal' %}Journal des opérations
+  {% elif action == 'bilan' %}Bilan simplifié
+  {% elif action == 'etat_recettes' %}État des recettes
+  {% elif action == 'etat_depenses' %}État des dépenses
+  {% elif action == 'rapport_global' %}Rapport financier global
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+
+  {% if action == 'journal' %}
+  <div class="card" style="margin-bottom:20px">
+    <form method="GET" style="display:flex;gap:16px;align-items:flex-end;flex-wrap:wrap">
+      <div class="form-group" style="margin:0">
+        <label>Date début</label>
+        <input type="date" name="date_debut" value="{{ date_debut }}">
+      </div>
+      <div class="form-group" style="margin:0">
+        <label>Date fin</label>
+        <input type="date" name="date_fin" value="{{ date_fin }}">
+      </div>
+      <button type="submit" class="btn-submit">Filtrer</button>
+      <a href="{% url 'journal' %}" class="btn-cancel">Réinitialiser</a>
+    </form>
+  </div>
+
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <h2>Toutes les opérations</h2>
+      <a href="{% url 'bilan_pdf' %}" class="btn-submit" style="text-decoration:none">Exporter PDF</a>
+    </div>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Description</th>
+          <th>Tiers</th>
+          <th>Type</th>
+          <th>Montant</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in recettes %}
+        <tr>
+          <td>{{ r.date }}</td>
+          <td>{{ r.description }}</td>
+          <td>{{ r.client|default:"—" }}</td>
+          <td><span style="background:#d6f6e7;color:#0d5a44;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700">Recette</span></td>
+          <td style="color:var(--good);font-weight:700">+ {{ r.montant|floatformat:0 }} XOF</td>
+        </tr>
+        {% endfor %}
+        {% for d in depenses %}
+        <tr>
+          <td>{{ d.date }}</td>
+          <td>{{ d.description }}</td>
+          <td>{{ d.fournisseur|default:"—" }}</td>
+          <td><span style="background:#ffe1e1;color:#7a1a1a;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700">Dépense</span></td>
+          <td style="color:var(--bad);font-weight:700">− {{ d.montant|floatformat:0 }} XOF</td>
+        </tr>
+        {% endfor %}
+        {% if not recettes and not depenses %}
+        <tr><td colspan="5" style="text-align:center;color:var(--muted);padding:40px">Aucune opération pour la période sélectionnée.</td></tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+
+  {% elif action == 'bilan' %}
+  <div class="grid-rapports">
+    <div>
+      <div class="card rev-vs">
+        <div class="head">
+          <div>
+            <h2>Bilan simplifié</h2>
+            <div class="sub">Exercice en cours</div>
+          </div>
+          <a href="{% url 'bilan_pdf' %}" class="btn-submit" style="text-decoration:none">PDF</a>
+        </div>
+
+        <div class="kpis" style="margin-top:24px">
+          <div class="kpi">
+            <div class="ic">↗</div>
+            <div class="lbl">Total recettes</div>
+            <div class="val" style="color:var(--good)">{{ total_recettes|floatformat:0 }} XOF</div>
+          </div>
+          <div class="kpi">
+            <div class="ic">↘</div>
+            <div class="lbl">Total dépenses</div>
+            <div class="val" style="color:var(--bad)">{{ total_depenses|floatformat:0 }} XOF</div>
+          </div>
+          <div class="kpi">
+            <div class="ic">=</div>
+            <div class="lbl">Résultat net</div>
+            <div class="val" style="color:{% if solde >= 0 %}var(--good){% else %}var(--bad){% endif %}">
+              {% if solde >= 0 %}+{% endif %}{{ solde|floatformat:0 }} XOF
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top:24px;padding:20px 24px;background:{% if solde >= 0 %}#d6f6e7{% else %}#ffe1e1{% endif %};border-radius:18px">
+          <span style="font-weight:700;color:{% if solde >= 0 %}#0d5a44{% else %}#7a1a1a{% endif %}">
+            {% if solde >= 0 %}✓ Résultat bénéficiaire{% else %}⚠ Résultat déficitaire{% endif %}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card exports">
+      <h2>Rapports <em>PDF</em></h2>
+      <div class="exp-row">
+        <div class="ic">📄</div>
+        <div><b>Bilan complet</b><small>Exercice en cours</small></div>
+        <a href="{% url 'bilan_pdf' %}" class="dl">→</a>
+      </div>
+      <div class="exp-row">
+        <div class="ic">↗</div>
+        <div><b>État des recettes</b><small>Toutes les recettes</small></div>
+        <a href="{% url 'etat_recettes' %}" class="dl">→</a>
+      </div>
+      <div class="exp-row">
+        <div class="ic">↘</div>
+        <div><b>État des dépenses</b><small>Toutes les dépenses</small></div>
+        <a href="{% url 'etat_depenses' %}" class="dl">→</a>
+      </div>
+      <div class="exp-row">
+        <div class="ic">≡</div>
+        <div><b>Rapport global</b><small>Synthèse complète</small></div>
+        <a href="{% url 'rapport_global' %}" class="dl">→</a>
+      </div>
+    </div>
+  </div>
+
+  {% elif action == 'etat_recettes' %}
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <div>
+        <h2>État des recettes</h2>
+        <span style="font-size:22px;font-weight:800;color:var(--good)">Total : {{ total|floatformat:0 }} XOF</span>
+      </div>
+      <a href="{% url 'bilan' %}" class="btn-cancel" style="text-decoration:none">← Retour</a>
+    </div>
+    <table class="data-table">
+      <thead><tr><th>Date</th><th>Description</th><th>Client</th><th>Montant</th></tr></thead>
+      <tbody>
+        {% for r in recettes %}
+        <tr>
+          <td>{{ r.date }}</td>
+          <td>{{ r.description }}</td>
+          <td>{{ r.client|default:"—" }}</td>
+          <td style="color:var(--good);font-weight:700">+ {{ r.montant|floatformat:0 }} XOF</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4" style="text-align:center;color:var(--muted);padding:40px">Aucune recette.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% elif action == 'etat_depenses' %}
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <div>
+        <h2>État des dépenses</h2>
+        <span style="font-size:22px;font-weight:800;color:var(--bad)">Total : {{ total|floatformat:0 }} XOF</span>
+      </div>
+      <a href="{% url 'bilan' %}" class="btn-cancel" style="text-decoration:none">← Retour</a>
+    </div>
+    <table class="data-table">
+      <thead><tr><th>Date</th><th>Description</th><th>Fournisseur</th><th>Montant</th></tr></thead>
+      <tbody>
+        {% for d in depenses %}
+        <tr>
+          <td>{{ d.date }}</td>
+          <td>{{ d.description }}</td>
+          <td>{{ d.fournisseur|default:"—" }}</td>
+          <td style="color:var(--bad);font-weight:700">− {{ d.montant|floatformat:0 }} XOF</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4" style="text-align:center;color:var(--muted);padding:40px">Aucune dépense.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% elif action == 'rapport_global' %}
+  <div class="kpis" style="margin-bottom:24px">
+    <div class="kpi">
+      <div class="ic">↗</div>
+      <div class="lbl">Total recettes</div>
+      <div class="val" style="color:var(--good)">{{ total_recettes|floatformat:0 }} XOF</div>
+    </div>
+    <div class="kpi">
+      <div class="ic">↘</div>
+      <div class="lbl">Total dépenses</div>
+      <div class="val" style="color:var(--bad)">{{ total_depenses|floatformat:0 }} XOF</div>
+    </div>
+    <div class="kpi">
+      <div class="ic">=</div>
+      <div class="lbl">Résultat net</div>
+      <div class="val" style="color:{% if solde >= 0 %}var(--good){% else %}var(--bad){% endif %}">
+        {% if solde >= 0 %}+{% endif %}{{ solde|floatformat:0 }} XOF
+      </div>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+    <div class="card">
+      <h2 style="margin-bottom:18px">Recettes</h2>
+      <table class="data-table">
+        <thead><tr><th>Date</th><th>Description</th><th>Montant</th></tr></thead>
+        <tbody>
+          {% for r in recettes %}
+          <tr>
+            <td>{{ r.date }}</td>
+            <td>{{ r.description }}</td>
+            <td style="color:var(--good);font-weight:700">+ {{ r.montant|floatformat:0 }} XOF</td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="3" style="color:var(--muted);text-align:center;padding:20px">Aucune recette.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="card">
+      <h2 style="margin-bottom:18px">Dépenses</h2>
+      <table class="data-table">
+        <thead><tr><th>Date</th><th>Description</th><th>Montant</th></tr></thead>
+        <tbody>
+          {% for d in depenses %}
+          <tr>
+            <td>{{ d.date }}</td>
+            <td>{{ d.description }}</td>
+            <td style="color:var(--bad);font-weight:700">− {{ d.montant|floatformat:0 }} XOF</td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="3" style="color:var(--muted);text-align:center;padding:20px">Aucune dépense.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+
+{% endblock %}
