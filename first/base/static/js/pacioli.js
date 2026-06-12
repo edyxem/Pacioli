@@ -21,3 +21,28 @@ if (searchInput) {
     });
   });
 }
+
+// ===== THEME SWITCH =====
+document.addEventListener('DOMContentLoaded', () => {
+  const btn = document.getElementById('themeToggle');
+  const root = document.documentElement;
+
+  if (!btn) return;
+
+  // Appliquer le thème sauvegardé (le script inline dans <head> l'a déjà posé,
+  // mais on s'assure que l'icône s'affiche correctement dès le rendu)
+  const saved = localStorage.getItem('pacioli-theme') || 'light';
+  root.setAttribute('data-theme', saved);
+
+  btn.addEventListener('click', () => {
+    const current = root.getAttribute('data-theme') || 'light';
+    const next = current === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    localStorage.setItem('pacioli-theme', next);
+
+    // Petite animation de rotation au clic
+    btn.style.transition = 'transform .35s cubic-bezier(.34,1.56,.64,1), box-shadow .2s';
+    btn.style.transform = 'rotate(360deg) scale(1.12)';
+    setTimeout(() => { btn.style.transform = ''; }, 350);
+  });
+});
