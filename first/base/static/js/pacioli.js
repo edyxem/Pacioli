@@ -10,15 +10,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 
-// ===== TOGGLE GRAPHIQUE (tableau de bord) =====
-document.querySelectorAll('.toggle button').forEach(btn => {
-  btn.addEventListener('click', () => {
-    btn.parentElement.querySelectorAll('button').forEach(b => b.classList.remove('on'));
-    btn.classList.add('on');
-  });
-});
-
-
 // ===== RECHERCHE TIERS EN TEMPS RÉEL =====
 const searchInput = document.getElementById('searchClient');
 if (searchInput) {

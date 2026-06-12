@@ -1,17 +1,14 @@
 from django.shortcuts import render, redirect
-from django.utils import timezone
 from recettes.models import Recette
 from depenses.models import Depense
 from tiers.models import Client, Fournisseur
 from datetime import timedelta, date
-from decimal import Decimal
 
 
 def get_chart_data(mode='mois'):
     today = date.today()
 
     if mode == 'semaine':
-        # Lundi de la semaine courante
         lundi = today - timedelta(days=today.weekday())
         jours = ['LUN', 'MAR', 'MER', 'JEU', 'VEN', 'SAM', 'DIM']
         data = []
@@ -28,7 +25,6 @@ def get_chart_data(mode='mois'):
         return data
 
     elif mode == 'semaines':
-        # 7 dernières semaines
         data = []
         for i in range(6, -1, -1):
             debut = today - timedelta(days=today.weekday()) - timedelta(weeks=i)
@@ -43,11 +39,10 @@ def get_chart_data(mode='mois'):
             })
         return data
 
-    else:  # mois — 6 derniers mois
+    else:  # 6 mois
         data = []
         MOIS = ['JAN', 'FÉV', 'MAR', 'AVR', 'MAI', 'JUN', 'JUL', 'AOÛ', 'SEP', 'OCT', 'NOV', 'DÉC']
         for i in range(5, -1, -1):
-            # Calculer le mois cible
             mois_target = today.month - i
             annee_target = today.year
             while mois_target <= 0:
@@ -70,7 +65,6 @@ def dashboard(request):
     if not request.user.is_authenticated:
         return redirect('login')
 
-    # Mode graphique actif
     chart_mode = request.GET.get('chart', 'mois')
 
     recettes = Recette.objects.all()
@@ -81,12 +75,14 @@ def dashboard(request):
 
     chart_data = get_chart_data(chart_mode)
 
-    # Calcul hauteur des barres (max = 100%)
-    max_val = max((d['recettes'] for d in chart_data), default=1)
-    if max_val == 0:
-        max_val = 1
+    # Calcul hauteur des barres
+    all_vals = [d['recettes'] for d in chart_data]
+    max_val = max(all_vals) if max(all_vals) > 0 else 1
     for d in chart_data:
-        d['hauteur'] = round((d['recettes'] / max_val) * 90) + 5  # min 5%, max 95%
+        if d['recettes'] > 0:
+            d['hauteur'] = max(round((d['recettes'] / max_val) * 85) + 10, 15)
+        else:
+            d['hauteur'] = 0
 
     return render(request, 'dashboard.html', {
         'recettes': recettes[:5],
