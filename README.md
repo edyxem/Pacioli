@@ -47,7 +47,7 @@ Pacioli est un logiciel de comptabilité simple, propre et sans prise de tête, 
 #### 1. Clone le projet
 
 ```bash
-git clone https://github.com/ton-repo/pacioli.git
+git clone https://github.com/edyxem/pacioli.git
 cd pacioli
 ```
 
